@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">CashImporter</string>
+    <string name="welcome">WELCOME</string>
+    <string name="test_App_id">ca-app-pub-3940256099942544~3347511713</string>
+    <string name="test_intertital_unit_id">ca-app-pub-3940256099942544/1033173712</string>
+
+    <string name="main_App_id"> ca-app-pub-9299514736657905~1137020680</string>
+    <string name="main_intertital_unit_id">ca-app-pub-9299514736657905/1791626801</string>
+
+    <string name="click_for_task">Click For Task</string>
 </resources>

@@ -5,8 +5,12 @@ import android.content.Intent;
 import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,7 +35,7 @@ public class Click_Activity extends AppCompatActivity {
     private int clickScore = 0;
     private InterstitialAd mInterstitialAd;
     private Button clickButton;
-    private ProgressDialog progressDialog;
+    private ProgressBar progressBar;
 
 
     CountDownTimer countDownTimer;
@@ -61,19 +65,18 @@ public class Click_Activity extends AppCompatActivity {
         clickBalanceControl = new ClickBalanceControl();
 
         clickButton = findViewById(R.id.completeClick);
-        progressDialog = new ProgressDialog(this);
+        progressBar = findViewById(R.id.progressBar22_id);
 
-
-        progressDialog.show();
-        clickButton.setEnabled(false);
+        clickButton.setVisibility(View.GONE);
+        progressBar.setVisibility(View.VISIBLE);
 
         balanceControl();
 
         MobileAds.initialize(this,
-                "ca-app-pub-3940256099942544~3347511713");
+                getString(R.string.test_App_id));
 
         mInterstitialAd = new InterstitialAd(this);
-        mInterstitialAd.setAdUnitId("ca-app-pub-3940256099942544/1033173712");
+        mInterstitialAd.setAdUnitId(getString(R.string.test_intertital_unit_id));
         mInterstitialAd.loadAd(new AdRequest.Builder().build());
 
 
@@ -108,7 +111,7 @@ public class Click_Activity extends AppCompatActivity {
             public void onAdLeftApplication() {
                 // Code to be executed when the user has left the app.
 
-                Toast.makeText(Click_Activity.this, "Thank you and Wait 50 second..", Toast.LENGTH_SHORT).show();
+                rulesToast();
                 startStop();
 
             }
@@ -122,8 +125,9 @@ public class Click_Activity extends AppCompatActivity {
 
                 }else {
 
-                    Toast.makeText(Click_Activity.this, " !..Your Work is not Completed. Try Again Ok ", Toast.LENGTH_SHORT).show();
+                    sorryToast();
                     mInterstitialAd.loadAd(new AdRequest.Builder().build());
+                    progressBar.setVisibility(View.VISIBLE);
                 }
             }
         });
@@ -133,7 +137,6 @@ public class Click_Activity extends AppCompatActivity {
     //------- OnCreate Ending point-----------
 
     private void clickScoreControl(){
-        Toast.makeText(Click_Activity.this, " Your Work is Successfully Completed ", Toast.LENGTH_SHORT).show();
 
         clickBalanceControl.AddBalance(clickScore);
         String updateScore= String.valueOf(clickBalanceControl.getBalance());
@@ -151,10 +154,10 @@ public class Click_Activity extends AppCompatActivity {
 
         if (mInterstitialAd.isLoaded()){
 
-            clickButton.setEnabled(true);
-            progressDialog.dismiss();
+            clickButton.setVisibility(View.VISIBLE);
+           progressBar.setVisibility(View.GONE);
         }else {
-            progressDialog.dismiss();
+            progressBar.setVisibility(View.GONE);
             Toast.makeText(this, "Please Check your Net Connections", Toast.LENGTH_SHORT).show();
         }
 
@@ -224,9 +227,10 @@ public class Click_Activity extends AppCompatActivity {
             @Override
             public void onFinish() {
                 clickScore++;
-                progressDialog.dismiss();
+               progressBar.setVisibility(View.GONE);
                 myRef.child(user.getUid()).child("AdsShowCount").removeValue();
-                Toast.makeText(Click_Activity.this, "Time is Completed...", Toast.LENGTH_SHORT).show();
+                successToast();
+
 
             }
         }.start();
@@ -237,7 +241,6 @@ public class Click_Activity extends AppCompatActivity {
 
     private void updateTimer() {
 
-        progressDialog.show();
         int minutes = (int) (timeLeft /60000);
         int seconds = (int) (timeLeft % 60000 /1000);
         timeText = ""+minutes;
@@ -252,9 +255,53 @@ public class Click_Activity extends AppCompatActivity {
     private void stopTime() {
         countDownTimer.cancel();
         timeRunning = false;
-        progressDialog.dismiss();
         // startBtn.setText("Start");
 
+
+
+    }
+
+    private void sorryToast(){
+
+        LayoutInflater inflater = getLayoutInflater();
+
+        View toastView = inflater.inflate(R.layout.field_layout, (ViewGroup) findViewById(R.id.sorryToast_id));
+
+        Toast toast = new Toast(Click_Activity.this);
+        toast.setDuration(Toast.LENGTH_LONG);
+        toast.setGravity(Gravity.CENTER,0,0);
+        toast.setView(toastView);
+        toast.show();
+
+
+    }
+
+    private void successToast(){
+
+        LayoutInflater inflater = getLayoutInflater();
+
+        View toastView = inflater.inflate(R.layout.complete_task_layout, (ViewGroup) findViewById(R.id.successToast_id));
+
+        Toast toast = new Toast(Click_Activity.this);
+        toast.setDuration(Toast.LENGTH_LONG);
+        toast.setGravity(Gravity.CENTER,0,0);
+        toast.setView(toastView);
+        toast.show();
+
+
+    }
+
+    private void rulesToast(){
+
+        LayoutInflater inflater = getLayoutInflater();
+
+        View toastView = inflater.inflate(R.layout.rules_layout, (ViewGroup) findViewById(R.id.rulesToast_id));
+
+        Toast toast = new Toast(Click_Activity.this);
+        toast.setDuration(Toast.LENGTH_LONG);
+        toast.setGravity(Gravity.CENTER,0,0);
+        toast.setView(toastView);
+        toast.show();
 
 
     }

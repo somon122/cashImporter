@@ -44,7 +44,7 @@ public class PhoneConfirmActivity extends AppCompatActivity {
 
         String phoneNumber = getIntent().getStringExtra("phoneNumber");
 
-        Toast.makeText(this, phoneNumber, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, phoneNumber, Toast.LENGTH_SHORT).show();
 
         sentVarificationCode(phoneNumber);
 

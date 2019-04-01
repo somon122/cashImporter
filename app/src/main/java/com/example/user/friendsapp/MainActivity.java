@@ -1,6 +1,4 @@
 package com.example.user.friendsapp;
-
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.CountDownTimer;
@@ -33,19 +31,20 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.Random;
+import java.util.zip.Inflater;
 
 public class MainActivity extends AppCompatActivity {
 
     private Button tapButton;
     private ImageView wheelImage;
     private TextView counterShow;
+    private ProgressBar progressBar;
 
     private Random r;
     private int degree = 0, degree_old = 0;
     private static final float FACTOR = 15f;
 
     private InterstitialAd mInterstitialAd;
-    private ProgressDialog progressDialog;
 
 
     private FirebaseDatabase database;
@@ -55,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ClickBalanceControl clickBalanceControl;
     private int counter = 0;
+    private int backCount = 0;
 
 
     CountDownTimer countDownTimer;
@@ -80,21 +80,21 @@ public class MainActivity extends AppCompatActivity {
 
         tapButton = findViewById(R.id.tapButtonId);
         wheelImage = findViewById(R.id.wheel_id);
+        progressBar = findViewById(R.id.progressBar2_id);
+
+        tapButton.setVisibility(View.GONE);
+        progressBar.setVisibility(View.VISIBLE);
 
         counterShow= findViewById(R.id.counterShow_Id);
 
-        tapButton.setEnabled(false);
 
         r = new Random();
-        progressDialog = new ProgressDialog(this);
-        progressDialog.show();
-
 
         MobileAds.initialize(this,
-                "ca-app-pub-3940256099942544~3347511713");
+                getString(R.string.main_App_id));
 
         mInterstitialAd = new InterstitialAd(this);
-        mInterstitialAd.setAdUnitId("ca-app-pub-3940256099942544/1033173712");
+        mInterstitialAd.setAdUnitId(getString(R.string.main_intertital_unit_id));
         mInterstitialAd.loadAd(new AdRequest.Builder().build());
 
       counterShow.setOnClickListener(new View.OnClickListener() {
@@ -113,7 +113,8 @@ public class MainActivity extends AppCompatActivity {
                     degree_old = degree % 360;
                     degree = r.nextInt(3600) + 720;
 
-                    RotateAnimation animationRotate = new RotateAnimation(degree_old,degree,RotateAnimation.RELATIVE_TO_SELF, 0.5f,RotateAnimation.RELATIVE_TO_SELF, 0.5f);
+                    RotateAnimation animationRotate = new RotateAnimation(degree_old,degree,RotateAnimation.RELATIVE_TO_SELF,
+                            0.5f,RotateAnimation.RELATIVE_TO_SELF, 0.5f);
                     animationRotate.setDuration(3600);
                     animationRotate.setFillAfter(true);
                     animationRotate.setInterpolator(new DecelerateInterpolator());
@@ -121,13 +122,14 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onAnimationStart(Animation animation) {
 
-                            tapButton.setEnabled(false);
+                            tapButton.setVisibility(View.GONE);
                         }
 
                         @Override
                         public void onAnimationEnd(Animation animation) {
 
                             mInterstitialAd.show();
+                            startStop();
 
                         }
 
@@ -176,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
             public void onAdClosed() {
 
 
-                if (clickBalanceControl.getBalance() >= 2)
+                if (clickBalanceControl.getBalance() >=40)
 
                 {
                     Intent intent = new Intent(MainActivity.this,Click_Activity.class);
@@ -186,13 +188,14 @@ public class MainActivity extends AppCompatActivity {
 
                 }else {
 
-                    courrentNumber(360 - (degree%360));
+                    //courrentNumber(360 - (degree%360));
                     counter++;
                     clickBalanceControl.AddBalance(counter);
                     String updateClickBalance = String.valueOf(clickBalanceControl.getBalance());
                     myRef.child(user.getUid()).child("AdsShowCount").setValue(updateClickBalance);
-                    progressDialog.show();
-                    tapButton.setEnabled(false);
+                    //progressDialog.show();
+                    progressBar.setVisibility(View.VISIBLE);
+                    tapButton.setVisibility(View.GONE);
                     gameOver();
 
                 }
@@ -248,11 +251,11 @@ public class MainActivity extends AppCompatActivity {
     private void adIsLoaded() {
 
         if (mInterstitialAd.isLoaded()){
-            progressDialog.dismiss();
-            startStop();
+            tapButton.setVisibility(View.VISIBLE);
+            progressBar.setVisibility(View.GONE);
 
         }else {
-            progressDialog.dismiss();
+            progressBar.setVisibility(View.GONE);
             Toast.makeText(this, "Please Check your Net Connections", Toast.LENGTH_SHORT).show();
         }
 
@@ -318,6 +321,12 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onBackPressed() {
+
+        back();
+
+    }
 
     private void gameOver(){
 
@@ -337,6 +346,32 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+
+    }
+ private void back(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+
+        builder.setMessage("Are you sure to exit ...!")
+                .setCancelable(false)
+                .setPositiveButton(" Ok ", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        finish();
+
+
+                    }
+                }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Toast.makeText(MainActivity.this, "Thank you for stay !", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         AlertDialog dialog = builder.create();
         dialog.show();
@@ -365,8 +400,8 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onFinish() {
-                    tapButton.setEnabled(true);
-                    progressDialog.dismiss();
+
+                    Toast.makeText(MainActivity.this, "Show Successfully", Toast.LENGTH_SHORT).show();
 
                 }
             }.start();
@@ -377,14 +412,14 @@ public class MainActivity extends AppCompatActivity {
 
         private void updateTimer() {
 
-            progressDialog.show();
+            //progressDialog.show();
             int minutes = (int) (timeLeft /60000);
             int seconds = (int) (timeLeft % 60000 /1000);
             timeText = ""+minutes;
             timeText += ":";
             if (seconds <10)timeText += "0";
             timeText +=seconds;
-            // timeTV.setText(timeText);
+            //timeTv.setText(timeText);
 
 
         }
@@ -392,7 +427,7 @@ public class MainActivity extends AppCompatActivity {
         private void stopTime() {
             countDownTimer.cancel();
             timeRunning = false;
-            progressDialog.dismiss();
+            //progressDialog.dismiss();
             // startBtn.setText("Start");
 
 
@@ -423,6 +458,7 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
 
 
     }
